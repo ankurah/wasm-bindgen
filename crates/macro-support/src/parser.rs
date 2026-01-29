@@ -474,8 +474,11 @@ impl ConvertToAst<&ast::Program> for &mut syn::ItemStruct {
         }
         let attrs = BindgenAttrs::find(&mut self.attrs)?;
 
-        // the `wasm_bindgen` option has been used before
-        let _ = attrs.wasm_bindgen();
+        // Use custom wasm_bindgen path if provided, otherwise use the program default
+        let wasm_bindgen = attrs
+            .wasm_bindgen()
+            .cloned()
+            .unwrap_or_else(|| program.wasm_bindgen.clone());
 
         let mut fields = Vec::new();
         let js_name = attrs
@@ -504,6 +507,9 @@ impl ConvertToAst<&ast::Program> for &mut syn::ItemStruct {
 
             let attrs = BindgenAttrs::find(&mut field.attrs)?;
             if attrs.skip().is_some() {
+                // Mark wasm_bindgen as used even for skipped fields, so users can
+                // specify a custom path on fields that will be skipped
+                let _ = attrs.wasm_bindgen();
                 attrs.check_used();
                 continue;
             }
@@ -529,7 +535,7 @@ impl ConvertToAst<&ast::Program> for &mut syn::ItemStruct {
                 generate_typescript: attrs.skip_typescript().is_none(),
                 generate_jsdoc: attrs.skip_jsdoc().is_none(),
                 getter_with_clone: attrs.getter_with_clone().or(getter_with_clone).copied(),
-                wasm_bindgen: program.wasm_bindgen.clone(),
+                wasm_bindgen: wasm_bindgen.clone(),
             });
             attrs.check_used();
         }
@@ -547,7 +553,7 @@ impl ConvertToAst<&ast::Program> for &mut syn::ItemStruct {
             generate_typescript,
             private,
             js_namespace,
-            wasm_bindgen: program.wasm_bindgen.clone(),
+            wasm_bindgen,
         })
     }
 }
