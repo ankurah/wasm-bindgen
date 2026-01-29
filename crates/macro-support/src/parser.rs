@@ -507,6 +507,9 @@ impl ConvertToAst<&ast::Program> for &mut syn::ItemStruct {
 
             let attrs = BindgenAttrs::find(&mut field.attrs)?;
             if attrs.skip().is_some() {
+                // Mark wasm_bindgen as used even for skipped fields, so users can
+                // specify a custom path on fields that will be skipped
+                let _ = attrs.wasm_bindgen();
                 attrs.check_used();
                 continue;
             }

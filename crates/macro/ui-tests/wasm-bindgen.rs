@@ -66,4 +66,21 @@ pub struct GoodStruct5 {
     pub field: u32,
 }
 
+// Test struct with skipped field that also has custom wasm_bindgen path
+#[wasm_bindgen(wasm_bindgen = wasm_bindgen)]
+pub struct GoodStruct6 {
+    #[wasm_bindgen(wasm_bindgen = wasm_bindgen, skip)]
+    pub skipped_field: u32,
+    pub visible_field: u32,
+}
+
+// Test struct where ALL fields are skipped with custom path
+#[wasm_bindgen(wasm_bindgen = wasm_bindgen)]
+pub struct GoodStruct7 {
+    #[wasm_bindgen(wasm_bindgen = wasm_bindgen, skip)]
+    field1: u32,
+    #[wasm_bindgen(wasm_bindgen = wasm_bindgen, skip)]
+    field2: String,
+}
+
 fn main() {}
